@@ -1,58 +1,176 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Evaluator V2
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Evaluator V2 is a Laravel app for managing course subjects, assigning them to semesters, setting prerequisites, and checking whether a student can proceed based on semester grades.
 
-## About Laravel
+## First Time Setup
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Prerequisites
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP 8.3 or newer
+- Composer
+- Node.js and npm
+- MySQL
+- Laravel Herd for local serving on macOS
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Run all commands from the Laravel project root. If your terminal is one directory above the app, enter it first:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cd evaluator-v2
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 1. Install PHP Dependencies
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 2. Create the Environment File
 
-## Code of Conduct
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Update these values in `.env` for local development:
 
-## Security Vulnerabilities
+```env
+APP_NAME="Evaluator V2"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://evaluator-v2.test
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=evaluator_v2
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## License
+### 3. Create the Database
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Create the local MySQL database if it does not exist yet:
+
+```bash
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS evaluator_v2 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+If your MySQL user has a password, add `-p` and enter the password when prompted.
+
+### 4. Configure OpenAI Narration
+
+The evaluator works without AI. AI narration is optional.
+
+To keep AI disabled:
+
+```env
+GRADE_EVALUATOR_AI_ENABLED=false
+```
+
+To enable OpenAI narration:
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_API_URL=https://api.openai.com/v1/responses
+OPENAI_MODEL=gpt-4.1-mini
+
+GRADE_EVALUATOR_AI_ENABLED=true
+GRADE_EVALUATOR_AI_API_KEY="${OPENAI_API_KEY}"
+GRADE_EVALUATOR_AI_API_URL="${OPENAI_API_URL}"
+GRADE_EVALUATOR_AI_MODEL="${OPENAI_MODEL}"
+GRADE_EVALUATOR_AI_TIMEOUT=15
+```
+
+After changing `.env`, clear cached config:
+
+```bash
+php artisan optimize:clear
+```
+
+### 5. Run Migrations
+
+```bash
+php artisan migrate
+```
+
+The migrations create the user, session, cache, job, course, and prerequisite tables.
+
+### 6. Install Frontend Dependencies
+
+```bash
+npm install
+```
+
+Build assets for a normal local run:
+
+```bash
+npm run build
+```
+
+For active frontend work, keep Vite running:
+
+```bash
+npm run dev
+```
+
+### 7. Open the App
+
+With Laravel Herd, open:
+
+```text
+http://evaluator-v2.test
+```
+
+If Herd is not serving the site, check that the project is inside your Herd sites directory and that `APP_URL` matches the local URL.
+
+## First Use Workflow
+
+1. Open the Course Dashboard.
+2. Create all course subjects.
+3. Assign each subject to the correct semester.
+4. Set prerequisites for subjects that require passed earlier courses.
+5. Go to Evaluate Semester.
+6. Select the semester being evaluated.
+7. Enter the student's grades for that semester.
+8. Submit the evaluation.
+
+The system will mark whether the student can proceed. If a failed subject is a prerequisite for a future subject, that future subject is shown as blocked.
+
+## Optional Workbook Import
+
+The app also supports worksheet import through the Workbook Import panel.
+
+Available templates:
+
+- `/template.csv`
+- `/template.xlsx`
+
+## Useful Commands
+
+```bash
+php artisan migrate
+php artisan test --compact
+php artisan optimize:clear
+npm run build
+npm run dev
+```
+
+## Troubleshooting
+
+If the page shows a Vite manifest error, run:
+
+```bash
+npm run build
+```
+
+If database-backed sessions, cache, or queues fail, make sure migrations have run:
+
+```bash
+php artisan migrate
+```
+
+If changes to `.env` do not apply, clear cached config:
+
+```bash
+php artisan optimize:clear
+```

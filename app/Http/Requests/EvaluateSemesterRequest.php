@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Course;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -20,7 +21,7 @@ class EvaluateSemesterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'semester' => ['required', 'integer', 'min:1', 'max:12'],
+            'semester' => ['required', 'integer', 'min:1', 'max:'.Course::MAX_SEMESTER],
             'grades' => ['nullable', 'array'],
             'grades.*' => ['nullable', 'string', 'max:20'],
             'use_ai' => ['nullable', 'boolean'],

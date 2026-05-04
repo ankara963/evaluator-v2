@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\GradeSheetParser;
 use App\GradeEvaluationNarrator;
 use App\GradeSheetEvaluator;
+use App\GradeSheetParser;
 use App\Http\Requests\EvaluateGradeSheetRequest;
 use App\Http\Requests\EvaluateSemesterRequest;
 use App\Models\Course;
-use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -38,7 +38,7 @@ class GradeEvaluationController extends Controller
                 $uploadedFile->getRealPath(),
                 $uploadedFile->getClientOriginalName(),
             );
-        } catch (\RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             throw ValidationException::withMessages([
                 'grade_sheet' => $exception->getMessage(),
             ]);
@@ -50,10 +50,10 @@ class GradeEvaluationController extends Controller
         return view('grade-evaluator', $this->dashboardData(
             $request,
             [
-            'evaluation' => $evaluation,
-            'narration' => $narration,
-            'uploadedFileName' => $uploadedFile->getClientOriginalName(),
-            'useAi' => $request->boolean('use_ai'),
+                'evaluation' => $evaluation,
+                'narration' => $narration,
+                'uploadedFileName' => $uploadedFile->getClientOriginalName(),
+                'useAi' => $request->boolean('use_ai'),
             ],
         ));
     }
@@ -152,7 +152,7 @@ class GradeEvaluationController extends Controller
             throw new RuntimeException('The Excel template could not be created.');
         }
 
-        $archive = new ZipArchive();
+        $archive = new ZipArchive;
         $opened = $archive->open($temporaryPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
         if ($opened !== true) {
@@ -228,7 +228,7 @@ XML;
     }
 
     /**
-     * @param list<array<string, string>> $rows
+     * @param  list<array<string, string>>  $rows
      */
     private function worksheetXml(array $rows): string
     {
@@ -271,7 +271,7 @@ XML;
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     private function dashboardData(Request $request, array $data = []): array
@@ -284,14 +284,14 @@ XML;
                 ->find($request->integer('edit_course'));
         }
 
-        $requestedSemester = (int) ($data['selectedSemester'] ?? ($request->integer('semester') ?: 1));
-
-        $maxSemester = max(
-            8,
-            (int) Course::query()->max('semester'),
-            $requestedSemester,
+        $requestedSemester = min(
+            Course::MAX_SEMESTER,
+            max(1, (int) ($data['selectedSemester'] ?? ($request->integer('semester') ?: 1))),
         );
-        $selectedSemester = (int) old('semester', $requestedSemester);
+        $selectedSemester = min(
+            Course::MAX_SEMESTER,
+            max(1, (int) old('semester', $requestedSemester)),
+        );
         $courses = Course::query()
             ->with('prerequisites:id,code,title,semester')
             ->orderBy('semester')
@@ -304,11 +304,11 @@ XML;
         return array_merge([
             'courses' => $courses,
             'coursesBySemester' => $activeCoursesBySemester,
-            'semesters' => range(1, $maxSemester),
-            'selectedSemester' => max(1, $selectedSemester),
+            'semesters' => range(1, Course::MAX_SEMESTER),
+            'selectedSemester' => $selectedSemester,
             'gradeInput' => [],
             'courseFormCourse' => $editingCourse ?? new Course([
-                'semester' => max(1, $selectedSemester),
+                'semester' => $selectedSemester,
                 'lecture_hours' => 0,
                 'laboratory_hours' => 0,
                 'credit_units' => 0,

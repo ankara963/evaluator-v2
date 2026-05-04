@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Course;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 
 uses(RefreshDatabase::class);
 
@@ -15,7 +15,20 @@ test('the grade evaluator page loads', function () {
         ->assertSee('Evaluate Semester')
         ->assertSee('Workbook Import')
         ->assertSee('Download CSV template')
-        ->assertSee('Download Excel template');
+        ->assertSee('Download Excel template')
+        ->assertDontSee('Semester 5');
+});
+
+test('semester evaluation is restricted to four semesters', function () {
+    $response = $this->from(route('grade-evaluator.index'))
+        ->post(route('semester-evaluator.evaluate'), [
+            'semester' => 5,
+            'grades' => [],
+            'use_ai' => '0',
+        ]);
+
+    $response->assertRedirect(route('grade-evaluator.index'));
+    $response->assertSessionHasErrors('semester');
 });
 
 test('a semester can be evaluated from saved course grades', function () {
@@ -233,7 +246,7 @@ function workbookContents(array $rows): string
         throw new RuntimeException('A temporary workbook file could not be created.');
     }
 
-    $archive = new ZipArchive();
+    $archive = new ZipArchive;
     $archive->open($temporaryPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
     $archive->addFromString('[Content_Types].xml', workbookContentTypesXml());
     $archive->addFromString('_rels/.rels', workbookRootRelationshipsXml());

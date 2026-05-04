@@ -8,7 +8,7 @@
     $selectedSemester = (int) ($selectedSemester ?? old('semester', 1));
     $gradeInput = $gradeInput ?? old('grades', []);
     $coursesBySemester = $coursesBySemester ?? collect();
-    $semesters = $semesters ?? range(1, 8);
+    $semesters = $semesters ?? range(1, \App\Models\Course::MAX_SEMESTER);
     $activeCoursesCount = $courses->where('is_active', true)->count();
     $configuredSemestersCount = $coursesBySemester->filter(fn ($semesterCourses) => $semesterCourses->isNotEmpty())->count();
     $selectedSemesterCourseCount = ($coursesBySemester->get($selectedSemester) ?? collect())->count();

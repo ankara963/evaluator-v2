@@ -41,7 +41,7 @@
     <label class="field">
         <span>Semester</span>
         <select name="semester" required>
-            @foreach (($semesters ?? range(1, 8)) as $semester)
+            @foreach (($semesters ?? range(1, \App\Models\Course::MAX_SEMESTER)) as $semester)
                 <option value="{{ $semester }}" @selected((int) old('semester', $course->semester ?? 1) === (int) $semester)>
                     Semester {{ $semester }}
                 </option>

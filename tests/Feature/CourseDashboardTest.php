@@ -56,6 +56,23 @@ test('a course can be created with prerequisites', function () {
         ->toEqualCanonicalizing($prerequisites->pluck('id')->all());
 });
 
+test('a course cannot be created outside four semesters', function () {
+    $response = $this->from(route('grade-evaluator.index'))
+        ->post(route('courses.store'), [
+            'code' => 'CS501',
+            'title' => 'Invalid Semester Course',
+            'semester' => 5,
+            'lecture_hours' => 2,
+            'laboratory_hours' => 1,
+            'credit_units' => 3,
+            'is_active' => '1',
+        ]);
+
+    $response->assertRedirect(route('grade-evaluator.index'));
+    $response->assertSessionHasErrors('semester');
+    $this->assertDatabaseMissing('courses', ['code' => 'CS501']);
+});
+
 test('a course can be updated and prerequisites can be replaced', function () {
     $course = Course::factory()->create([
         'code' => 'CS202',

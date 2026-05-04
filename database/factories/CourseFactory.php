@@ -20,7 +20,7 @@ class CourseFactory extends Factory
         return [
             'code' => fake()->unique()->bothify('SUBJ###'),
             'title' => fake()->words(3, true),
-            'semester' => fake()->numberBetween(1, 8),
+            'semester' => fake()->numberBetween(1, Course::MAX_SEMESTER),
             'lecture_hours' => fake()->randomElement([1, 2, 3]),
             'laboratory_hours' => fake()->randomElement([0, 1, 2]),
             'credit_units' => fake()->randomElement([2, 3, 4]),

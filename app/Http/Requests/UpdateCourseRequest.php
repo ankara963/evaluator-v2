@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Course;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,7 +32,7 @@ class UpdateCourseRequest extends FormRequest
                 Rule::unique('courses', 'code')->ignore($this->route('course')),
             ],
             'title' => ['required', 'string', 'max:255'],
-            'semester' => ['required', 'integer', 'min:1', 'max:12'],
+            'semester' => ['required', 'integer', 'min:1', 'max:'.Course::MAX_SEMESTER],
             'lecture_hours' => ['required', 'numeric', 'min:0', 'max:99.99'],
             'laboratory_hours' => ['required', 'numeric', 'min:0', 'max:99.99'],
             'credit_units' => ['required', 'numeric', 'min:0', 'max:99.99'],

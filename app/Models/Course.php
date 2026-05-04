@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use Database\Factories\CourseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Course extends Model
 {
-    /** @use HasFactory<\Database\Factories\CourseFactory> */
+    /** @use HasFactory<CourseFactory> */
     use HasFactory;
+
+    public const int MAX_SEMESTER = 4;
 
     /**
      * @var list<string>
@@ -40,7 +43,7 @@ class Course extends Model
         static::saving(function (self $course): void {
             $course->code = mb_strtoupper(trim($course->code));
             $course->title = trim($course->title);
-            $course->semester = max(1, (int) $course->semester);
+            $course->semester = min(self::MAX_SEMESTER, max(1, (int) $course->semester));
         });
     }
 
